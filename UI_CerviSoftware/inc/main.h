@@ -50,8 +50,10 @@
 /* Includes ------------------------------------------------------------------*/
 #include "stm32746g_discovery.h"
 #include "stm32746g_discovery_lcd.h"
+#include "stm32746g_discovery_ts.h"
 #include <stdlib.h>
 #include "fatfs_storage.h"
+#include "CerviGUI.h"
 
 /* FatFs includes component */
 #include "ff_gen_drv.h"

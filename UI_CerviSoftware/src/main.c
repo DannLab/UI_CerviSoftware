@@ -6,7 +6,19 @@
 ******************************************************************************
 * @attention
 *
-* Here there is main loop where every action is perform
+* This is a simple demo program for Cervi Robotics
+*
+* This example provide:
+*
+* I/O status menu:
+* This menu allows change and display I/O status
+*
+* Stepper motor control menu
+* JOG menu for manual stepper motor control
+*
+* Online motor control
+* This is extension for manual JOG menu that can provide
+* control motor through UART
 *
 ******************************************************************************
 */
@@ -14,35 +26,24 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 
-/** @addtogroup STM32F7xx_HAL_Applications
-  * @{
-  */
-
-/** @addtogroup LTDC_PicturesFromSDCard
-  * @{
-  */ 
 
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
-FATFS SD_FatFs;  /* File system object for SD card logical drive */
-char SD_Path[4]; /* SD card logical drive path */
-char* pDirectoryFiles[MAX_BMP_FILES];
-uint8_t  ubNumberOfFiles = 0;
-uint32_t uwBmplen = 0;
 
 /* Internal Buffer defined in SDRAM memory */
-uint8_t *uwInternelBuffer;
+//uint8_t *uwInternelBuffer;
 
-/* Private function prototypes -----------------------------------------------*/
-static void LCD_Config(void);
+/* Private function ----------------------------------------------------------*/
 static void SystemClock_Config(void);
-static void Error_Handler(void);
 static void CPU_CACHE_Enable(void);
-static void LoadGraphics(void);
+void CerviGUI_Init(void);
+void GUI_Intro(void);
 
 /* Private functions ---------------------------------------------------------*/
+
+
 
 /**
   * @brief  Main program
@@ -51,213 +52,56 @@ static void LoadGraphics(void);
   */
 int main(void)
 {
-  uint32_t counter = 0, transparency = 0;
-  uint8_t str[30];
-  uwInternelBuffer = (uint8_t *)0xC0260000;
+	//uwInternelBuffer = (uint8_t *)0xC0260000;
 
-  /* Enable the CPU Cache */
-  CPU_CACHE_Enable();
+	/* Enable the CPU Cache */
+	CPU_CACHE_Enable();
 
-  /* STM32F7xx HAL library initialization:
-       - Configure the Flash ART accelerator on ITCM interface
-       - Configure the Systick to generate an interrupt each 1 msec
-       - Set NVIC Group Priority to 4
-       - Global MSP (MCU Support Package) initialization
-     */
-  HAL_Init();
-  
-  /* Configure the system clock to 200 MHz */
-  SystemClock_Config();
-  
-  /* Configure LED1 */
-  BSP_LED_Init(LED1);
-  
-  /*##-1- Configure LCD ######################################################*/
-  LCD_Config(); 
-  
-  /* Configure TAMPER Button */
-  BSP_PB_Init(BUTTON_TAMPER, BUTTON_MODE_GPIO);
+	/* STM32F7xx HAL library initialization:
+	- Configure the Flash ART accelerator on ITCM interface
+	- Configure the Systick to generate an interrupt each 1 msec
+	- Set NVIC Group Priority to 4
+	- Global MSP (MCU Support Package) initialization
+	*/
+	HAL_Init();
 
-  LoadGraphics();
+	/* Configure the system clock to 200 MHz */
+	SystemClock_Config();
 
-  BSP_SD_Init();
-
-  //--------------------------------------------------------------------------------
-/**
-******************************************************************************
-* @file    /UI_CerviSoftware/src/main.c
-* @author  DannLab
-* @brief   This file provides main program functions
-******************************************************************************
-* @attention
-*
-* Here ther is main loop where every action is perform
-*
-******************************************************************************
-*/
-
-  /* Set LCD foreground Layer */
-  	BSP_LCD_SelectLayer(1);
-
-  	BSP_LCD_SetTextColor(LCD_COLOR_RED);
-  	BSP_LCD_SetBackColor(LCD_COLOR_LIGHTGRAY);
-  	BSP_LCD_DisplayStringAtLine(8, (uint8_t*)"  Loading...                             ");
+	/* Configure LED1 */
+	BSP_LED_Init(LED1);
 
 
-  	BSP_LCD_SetTransparency(1, 255);
-  	BSP_LCD_SetTransparency(0, 255);
+	/* Configure TAMPER Button */
+	BSP_PB_Init(BUTTON_TAMPER, BUTTON_MODE_GPIO);
 
-	#define delay 35
+	CerviGUI_Init();
+	GUI_Intro();
+	HAL_Delay(300);
 
-//--------------- new thing -----------------------------------------------------------
-
-	BSP_LCD_SelectLayer(1);
-
-	HAL_Delay(1000);
-
-	for(int a=1; a<8; a++)
+	while(1)
 	{
-		sprintf ((char*)str, "GRsource/Intro/%d.bmp", a);
-		/* Open a file and copy its content to an internal buffer */
-		Storage_OpenReadFile(uwInternelBuffer+(a-1)*391800, (const char*)str);
-	}
-
-	for(int a=1; a<8; a++)
-	{
-		/* Write bmp file on LCD frame buffer */
-		BSP_LCD_DrawBitmap(0, 0, uwInternelBuffer+(a-1)*391800);
-
-		HAL_Delay(delay);
-	}
-
-	HAL_Delay(500);
-
-	 /* Set LCD foreground Layer */
-	BSP_LCD_SelectLayer(0);
-
-	Storage_OpenReadFile(uwInternelBuffer, "Media/cervi.bmp");
-	BSP_LCD_DrawBitmap(0, 0, uwInternelBuffer);
-
-	/* Configure the transparency for foreground layer : decrease the transparency */
-	for (transparency = 255; transparency > 0; transparency--)
-	{
-	  BSP_LCD_SetTransparency(1, transparency);
-
-	  /* Insert a delay of display */
-	  HAL_Delay(1);
-	}
-
-  while(1)
-  {
-
-  }
-}
-
-/**
-  * @brief  LCD configuration
-  * @param  None
-  * @retval None
-  */
-static void LCD_Config(void)
-{
-  /* LCD Initialization */ 
-  BSP_LCD_Init();
-
-  /* LCD Initialization */ 
-  BSP_LCD_LayerDefaultInit(0, LCD_FB_START_ADDRESS);
-  BSP_LCD_LayerDefaultInit(1, LCD_FB_START_ADDRESS+(BSP_LCD_GetXSize()*BSP_LCD_GetYSize()*4));
-
-  /* Enable the LCD */ 
-  BSP_LCD_DisplayOn(); 
-  
-  /* Select the LCD Background Layer  */
-  BSP_LCD_SelectLayer(0);
-
-  /* Clear the Background Layer */ 
-  BSP_LCD_Clear(LCD_COLOR_BLACK);  
-  
-  /* Select the LCD Foreground Layer  */
-  BSP_LCD_SelectLayer(1);
-
-  /* Clear the Foreground Layer */ 
-  BSP_LCD_Clear(LCD_COLOR_BLACK);
-  
-  /* Configure the transparency for foreground and background :
-     Increase the transparency */
-  BSP_LCD_SetTransparency(0, 0);
-  BSP_LCD_SetTransparency(1, 100);
-}
-
-/**
-  * @brief  This function is executed in case of error occurrence.
-  * @param  None
-  * @retval None
-  */
-static void Error_Handler(void)
-{
-  /* Turn LED1 on */
-  BSP_LED_On(LED1);
-  while(1)
-  {
-  }
-}
-
-
-static void LoadGraphics(void)
-{
-	int counter = 0;
-	BSP_SD_Init();
-
-	while(BSP_SD_IsDetected() != SD_PRESENT)
-	{
-		BSP_LCD_SetTextColor(LCD_COLOR_RED);
-		BSP_LCD_DisplayStringAtLine(8, (uint8_t*)"  Please insert SD Card                  ");
-	}
-
-	BSP_LCD_Clear(LCD_COLOR_BLACK);
-
-
-	/*##-2- Link the SD Card disk I/O driver ###################################*/
-	if(FATFS_LinkDriver(&SD_Driver, SD_Path) == 0)
-	{
-	/*##-3- Initialize the Directory Files pointers (heap) ###################*/
-	for (counter = 0; counter < MAX_BMP_FILES; counter++)
-	{
-	  pDirectoryFiles[counter] = malloc(MAX_BMP_FILE_NAME);
-	  if(pDirectoryFiles[counter] == NULL)
-	  {
-		/* Set the Text Color */
-		BSP_LCD_SetTextColor(LCD_COLOR_RED);
-
-		BSP_LCD_DisplayStringAtLine(8, (uint8_t*)"  Cannot allocate memory ");
-
-		while(1)
+		switch(GUI_MainMenu())
 		{
+		case IO_MENU:
+			HAL_Delay(300);
+			GUI_IOMenu();
+			break;
+
+		case JOG_MOTOR_MENU:
+			HAL_Delay(300);
+			break;
 		}
-	  }
-	}
 
-	/* Get the BMP file names on root directory */
-	ubNumberOfFiles = Storage_GetDirectoryBitmapFiles("/Media", pDirectoryFiles);
-
-	if (ubNumberOfFiles == 0)
-	{
-	  for (counter = 0; counter < MAX_BMP_FILES; counter++)
-	  {
-		free(pDirectoryFiles[counter]);
-	  }
-	  BSP_LCD_DisplayStringAtLine(8, (uint8_t*)"  No Bitmap files...      ");
-	  while(1)
-	  {
-	  }
-	}
-	}
-	else
-	{
-	/* FatFs Initialization Error */
-	Error_Handler();
+		BSP_LCD_SelectLayer(1);
+		BSP_LCD_Clear(LCD_COLOR_WHITE);
 	}
 }
+
+
+//-------------------------------------------------------------------------------------
+//--------------- main end ------------------------------------------------------------
+//-------------------------------------------------------------------------------------
 
 /**
   * @brief  System Clock Configuration
