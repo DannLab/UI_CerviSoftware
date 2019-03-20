@@ -229,8 +229,10 @@ void GUI_Intro(void)
 	Storage_OpenReadFile(ADR_off, "GRsource/off.bmp");
 	Storage_OpenReadFile(ADR_back1, "GRsource/back1.bmp");
 	Storage_OpenReadFile(ADR_pback1, "GRsource/pback1.bmp");
+	Storage_OpenReadFile(ADR_plugin, "GRsource/plugin.bmp");
+	Storage_OpenReadFile(ADR_plugout, "GRsource/plugout.bmp");
 
-	//HAL_Delay(1000);
+	HAL_Delay(500);
 
 	 /* Set LCD foreground Layer */
 	BSP_LCD_SelectLayer(0);
@@ -245,7 +247,7 @@ void GUI_Intro(void)
 	  HAL_Delay(1);
 	}
 
-	HAL_Delay(1000);
+	HAL_Delay(1400);
 
 	BSP_LCD_SelectLayer(1);
 	BSP_LCD_Clear(LCD_COLOR_WHITE);
@@ -355,6 +357,16 @@ void GUI_IOMenu(void)
 	BSP_LCD_DisplayStringAt(130, 120, (uint8_t*) "Change output status - LED1", LEFT_MODE);
 	BSP_LCD_DisplayStringAt(130, 200, (uint8_t*) "Check input status - switch 1", LEFT_MODE);
 
+	//if led is on turn off
+	if(GPIOI->IDR & (1<<1))
+	{
+		BSP_LCD_DrawBitmap(20, 100, ADR_on);
+	}
+	else
+	{
+		BSP_LCD_DrawBitmap(20, 100, ADR_off);
+	}
+
 	while(1)
 	{
 		BSP_TS_GetState(&TS_State);
@@ -374,15 +386,21 @@ void GUI_IOMenu(void)
 			}
 			else
 			// check output button
-			if(20<x1 && x1<120 && 100<y1 && y1<157)
+			if(!(GPIOI->IDR & (1<<1)))
 			{
-				//if led is on turn on
-				if(!(GPIOI->IDR & (1<<1)))
+				if(70<x1 && x1<120 && 100<y1 && y1<157)
+				{
 					BSP_LCD_DrawBitmap(20, 100, ADR_on);
-				else
+					BSP_LED_On(LED1);
+				}
+			}
+			else
+			{
+				if(20<x1 && x1<70 && 100<y1 && y1<157)
+				{
 					BSP_LCD_DrawBitmap(20, 100, ADR_off);
-				/* Toggle LED1 */
-				BSP_LED_Toggle(LED1);
+					BSP_LED_Off(LED1);
+				}
 			}
 		}
 		if(BSP_PB_GetState(BUTTON_TAMPER) != RESET)
@@ -392,6 +410,107 @@ void GUI_IOMenu(void)
 		else
 			BSP_LCD_DrawBitmap(20, 180, ADR_off);
 	}
+}
+
+/* ---------------------------------------------------------------------------*/
+/**
+  * @brief  Startup GUI
+  * @param  None
+  * @retval None
+  */
+/* ---------------------------------------------------------------------------*/
+void GUI_STPMenu(void)
+{
+	TS_StateTypeDef  TS_State = {0};
+	//UART_HandleTypeDef uart;
+
+	//uart.Instance = USART1;
+
+	int exit=0;
+	char temp[50];
+
+	int x1, y1;
+
+	BSP_LCD_SelectLayer(1);
+	BSP_LCD_Clear(LCD_COLOR_WHITE);
+
+	BSP_LCD_SetTextColor(StepperMenuColor);
+
+	for(int a=0; a<36; a++)
+	{
+		BSP_LCD_DrawHLine(0,a,480);
+		HAL_Delay(5);
+	}
+
+	BSP_LCD_DrawBitmap(0, 0, ADR_mstepmenu);
+	BSP_LCD_DrawBitmap(400, 20, ADR_back1);
+	BSP_LCD_DrawBitmap(80, 110, ADR_plugout);
+
+	BSP_LCD_SetTextColor(LCD_COLOR_BLACK);
+	BSP_LCD_SetBackColor(LCD_COLOR_WHITE);
+	BSP_LCD_SetFont(&Font16);
+
+	BSP_LCD_DrawRect(70, 100, 330, 100);
+
+	BSP_LCD_DisplayStringAt(180, 110, (uint8_t*) "                   ", LEFT_MODE);
+	BSP_LCD_DisplayStringAt(180, 130, (uint8_t*) "System disconnected", LEFT_MODE);
+	BSP_LCD_DisplayStringAt(180, 150, (uint8_t*) "-tap to connect-   ", LEFT_MODE);
+	BSP_LCD_DisplayStringAt(180, 170, (uint8_t*) "                   ", LEFT_MODE);
+
+	while(!exit)
+	{
+		BSP_TS_GetState(&TS_State);
+		if(TS_State.touchEventId[0] == TOUCH_EVENT_PRESS_DOWN)
+		{
+			x1 = TS_State.touchX[0];
+			y1 = TS_State.touchY[0];
+
+			BSP_TS_ResetTouchData(&TS_State);
+
+			// check back1 button
+			if(400<x1 && x1<460 && 20<y1 && y1<80)
+			{
+				BSP_LCD_DrawBitmap(400, 20, ADR_pback1);
+				HAL_Delay(100);
+				exit=1;
+				//break;
+			}
+			else
+			// check connection button
+			if(70<x1 && x1<400 && 100<y1 && y1<200)
+			{
+				BSP_LCD_DrawBitmap(80, 110, ADR_plugin);
+				//BSP_LCD_DisplayStringAt(180, 110, (uint8_t*) "Processing...      ", LEFT_MODE);
+				BSP_LCD_DisplayStringAt(180, 130, (uint8_t*) "System connected   ", LEFT_MODE);
+				BSP_LCD_DisplayStringAt(180, 150, (uint8_t*) "USART(115200bps)   ", LEFT_MODE);
+				BSP_LCD_DisplayStringAt(180, 170, (uint8_t*) "(8bit,1s,no par)   ", LEFT_MODE);
+
+				SendString("Do you want to connect? [y/n]\n");
+
+
+
+				//HAL_UART_Receive(&uart,(uint8_t*)temp, 1, 100);
+
+				if( (strcmp(temp,"yes") == 0) || (strcmp(temp,"y") == 0) )
+				{
+					//BSP_LCD_DisplayStringAt(180, 110, (uint8_t*) "YES                ", LEFT_MODE);
+					SendString("Connected\n");
+				} else
+				if( (strcmp(temp,"no") == 0) || (strcmp(temp,"n") == 0) )
+				{
+					//BSP_LCD_DisplayStringAt(180, 110, (uint8_t*) "NO                 ", LEFT_MODE);
+					SendString("Disconnected\n");
+				}
+
+			}
+
+		}
+	}
+}
+
+void USART1_IRQHandler(void)
+{
+	temp[0] = USART1->RDR;
 }
 
 /************************ Dann Lab *****************************END OF FILE****/

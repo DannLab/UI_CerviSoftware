@@ -26,24 +26,15 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 
-
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
 
-/* Internal Buffer defined in SDRAM memory */
-//uint8_t *uwInternelBuffer;
 
 /* Private function ----------------------------------------------------------*/
 static void SystemClock_Config(void);
 static void CPU_CACHE_Enable(void);
-void CerviGUI_Init(void);
-void GUI_Intro(void);
-
-/* Private functions ---------------------------------------------------------*/
-
-
 
 /**
   * @brief  Main program
@@ -75,6 +66,9 @@ int main(void)
 	/* Configure TAMPER Button */
 	BSP_PB_Init(BUTTON_TAMPER, BUTTON_MODE_GPIO);
 
+	/* USART1 initialize */
+	POST_USART1_Init();
+
 	CerviGUI_Init();
 	GUI_Intro();
 	HAL_Delay(300);
@@ -84,12 +78,13 @@ int main(void)
 		switch(GUI_MainMenu())
 		{
 		case IO_MENU:
-			HAL_Delay(300);
+			HAL_Delay(100);
 			GUI_IOMenu();
 			break;
 
 		case JOG_MOTOR_MENU:
-			HAL_Delay(300);
+			HAL_Delay(100);
+			GUI_STPMenu();
 			break;
 		}
 

@@ -48,12 +48,15 @@
 #define __MAIN_H
 
 /* Includes ------------------------------------------------------------------*/
+#include "stm32f7xx.h"
 #include "stm32746g_discovery.h"
 #include "stm32746g_discovery_lcd.h"
 #include "stm32746g_discovery_ts.h"
 #include <stdlib.h>
 #include "fatfs_storage.h"
 #include "CerviGUI.h"
+#include "USART1config.h"
+#include "STEPconfig.h"
 
 /* FatFs includes component */
 #include "ff_gen_drv.h"

@@ -18,6 +18,8 @@
 #include "stm32746g_discovery_ts.h"
 #include "fatfs_storage.h"
 #include "ImageAloc.h"
+#include "USART1config.h"
+
 
 /* FatFs includes component */
 #include "ff_gen_drv.h"
@@ -32,6 +34,9 @@
 FATFS SD_FatFs;  /* File system object for SD card logical drive */
 char SD_Path[4]; /* SD card logical drive path */
 
+uint8_t temp[50];
+//volatile uint8_t data1 = 'a';
+
 // Buffer for image processing
 //uint8_t *uwInternelBuffer;
 //uwInternelBuffer = (uint8_t *)0xC0260000;
@@ -44,6 +49,7 @@ void 	CerviGUI_Init(void);
 void 	GUI_Intro(void);
 uint8_t GUI_MainMenu(void);
 void	GUI_IOMenu(void);
+void 	GUI_STPMenu(void);
 
 /**
  *  @brief Sub menu
