@@ -26,11 +26,16 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 
+#include "stm32f7xx.h"
+#include "stm32f7xx_hal_usart.h"
+#include "stm32f7xx_hal_uart.h"
+#include "stm32f7xx_hal_uart_ex.h"
+#include "stm32f7xx_ll_usart.h"
+
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
-
 
 /* Private function ----------------------------------------------------------*/
 static void SystemClock_Config(void);
@@ -62,12 +67,27 @@ int main(void)
 	/* Configure LED1 */
 	BSP_LED_Init(LED1);
 
-
 	/* Configure TAMPER Button */
 	BSP_PB_Init(BUTTON_TAMPER, BUTTON_MODE_GPIO);
 
 	/* USART1 initialize */
 	POST_USART1_Init();
+
+	/*uint8_t data1;
+
+	while(1)
+	{
+		data1 = ReciveChar();
+
+		if(data1 == 'a')
+		{
+			BSP_LED_On(LED1);
+		}
+		if(data1 == 'b')
+		{
+			BSP_LED_Off(LED1);
+		}
+	}*/
 
 	CerviGUI_Init();
 	GUI_Intro();

@@ -422,12 +422,10 @@ void GUI_IOMenu(void)
 void GUI_STPMenu(void)
 {
 	TS_StateTypeDef  TS_State = {0};
-	//UART_HandleTypeDef uart;
 
-	//uart.Instance = USART1;
+	uint8_t data;
 
-	int exit=0;
-	char temp[50];
+	int exit=0, exit_menu = 0, constat = 0;
 
 	int x1, y1;
 
@@ -473,44 +471,76 @@ void GUI_STPMenu(void)
 				BSP_LCD_DrawBitmap(400, 20, ADR_pback1);
 				HAL_Delay(100);
 				exit=1;
-				//break;
 			}
 			else
 			// check connection button
-			if(70<x1 && x1<400 && 100<y1 && y1<200)
+			if(70<x1 && x1<400 && 100<y1 && y1<200 && constat==0)
 			{
-				BSP_LCD_DrawBitmap(80, 110, ADR_plugin);
 				//BSP_LCD_DisplayStringAt(180, 110, (uint8_t*) "Processing...      ", LEFT_MODE);
-				BSP_LCD_DisplayStringAt(180, 130, (uint8_t*) "System connected   ", LEFT_MODE);
+				BSP_LCD_DisplayStringAt(180, 130, (uint8_t*) "Trying to connect  ", LEFT_MODE);
 				BSP_LCD_DisplayStringAt(180, 150, (uint8_t*) "USART(115200bps)   ", LEFT_MODE);
 				BSP_LCD_DisplayStringAt(180, 170, (uint8_t*) "(8bit,1s,no par)   ", LEFT_MODE);
 
 				SendString("Do you want to connect? [y/n]\n");
 
-
-
-				//HAL_UART_Receive(&uart,(uint8_t*)temp, 1, 100);
-
-				if( (strcmp(temp,"yes") == 0) || (strcmp(temp,"y") == 0) )
-				{
-					//BSP_LCD_DisplayStringAt(180, 110, (uint8_t*) "YES                ", LEFT_MODE);
-					SendString("Connected\n");
-				} else
-				if( (strcmp(temp,"no") == 0) || (strcmp(temp,"n") == 0) )
-				{
-					//BSP_LCD_DisplayStringAt(180, 110, (uint8_t*) "NO                 ", LEFT_MODE);
-					SendString("Disconnected\n");
-				}
-
+				constat = 1;
 			}
+		}
+		if(constat == 1)
+		{
+			data = ReciveChar();
+			if(data == 'y')
+			{
+				BSP_LCD_DrawBitmap(80, 110, ADR_plugin);
+				BSP_LCD_DisplayStringAt(180, 130, (uint8_t*) "Connected          ", LEFT_MODE);
 
+				for(int c=0; c<20; c++)
+					SendString("\n");
+
+				SendString("Connected...\n\n What do you want to do?\n");
+				SendString("1 - Disconnect\n");
+				SendString("2 - Move axis\n");
+				SendString("3 - Read axis coordinates\n");
+
+				for(int c=0; c<11; c++)
+					SendString("\n");
+
+				while(!exit_menu)
+				{
+					data = ReciveChar();
+
+					switch(data)
+					{
+					case '1':
+						BSP_LCD_DrawBitmap(80, 110, ADR_plugout);
+						BSP_LCD_DisplayStringAt(180, 130, (uint8_t*) "Disconnected       ", LEFT_MODE);
+						SendString("\n\nDisconnected\n");
+						exit_menu = 1;
+						break;
+
+					case '2':
+					case '3':
+						SendString("\n\nCommand not included\n");
+
+						HAL_Delay(2000);
+
+						SendString("Connected...\n What do you want to do?\n");
+						SendString("1 - Disconnect\n");
+						SendString("2 - Move axis\n");
+						SendString("3 - Read axis coordinates\n");
+
+						for(int c=0; c<11; c++)
+							SendString("\n");
+						break;
+					}
+				}
+			}
 		}
 	}
 }
 
 void USART1_IRQHandler(void)
 {
-	temp[0] = USART1->RDR;
 }
 
 /************************ Dann Lab *****************************END OF FILE****/

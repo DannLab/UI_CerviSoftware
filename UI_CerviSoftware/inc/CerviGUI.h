@@ -20,6 +20,12 @@
 #include "ImageAloc.h"
 #include "USART1config.h"
 
+#include "stm32f7xx.h"
+#include "stm32f7xx_hal_usart.h"
+#include "stm32f7xx_hal_uart.h"
+#include "stm32f7xx_hal_uart_ex.h"
+#include "stm32f7xx_ll_usart.h"
+
 
 /* FatFs includes component */
 #include "ff_gen_drv.h"
@@ -33,9 +39,6 @@
 /* Private variables ---------------------------------------------------------*/
 FATFS SD_FatFs;  /* File system object for SD card logical drive */
 char SD_Path[4]; /* SD card logical drive path */
-
-uint8_t temp[50];
-//volatile uint8_t data1 = 'a';
 
 // Buffer for image processing
 //uint8_t *uwInternelBuffer;

@@ -27,6 +27,8 @@
 /* Private function ----------------------------------------------------------*/
 void POST_USART1_Init( void );
 void SendString(const char* str);
+uint8_t ReciveChar(void);
+void rec(void);
 
 
 #endif /* USART1CONFIG_H_ */

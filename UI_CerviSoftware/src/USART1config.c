@@ -60,3 +60,33 @@ void SendString(const char* str)
 		USART1->TDR = *str++;
 	}
 }
+
+uint8_t ReciveChar(void)
+{
+	UART_HandleTypeDef uart;
+	uint8_t data;
+
+	uart.Instance = USART1;
+	uart.Init.WordLength = UART_WORDLENGTH_8B;
+
+	if (__HAL_UART_GET_FLAG(&uart, UART_FLAG_RXNE) == SET)
+	{
+		data = USART1->RDR;
+	}
+	return data;
+}
+
+void rec(void)
+{
+	UART_HandleTypeDef uart;
+	uint8_t data[10] = {0};
+
+	while(1)
+	{
+		if (__HAL_UART_GET_FLAG(&uart, UART_FLAG_RXNE) == SET)
+		{
+			HAL_UART_Receive(&uart, data, 1, 100);
+			HAL_UART_Transmit(&uart, data, 1, 100);
+		}
+	}
+}
