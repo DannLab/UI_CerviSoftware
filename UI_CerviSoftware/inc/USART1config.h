@@ -5,7 +5,8 @@
   * @brief   This file contains USART1 configuration
   ******************************************************************************
   * @attention
-  *
+  * USART configuration for Discovery F746G
+  * Connection through USART1-> St-link->/dev/ttyACM0
   *
   ******************************************************************************
   */
